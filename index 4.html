@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paint Dokdo</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f3efe6;--ink:#10303f;--sub:#5d7480;--card:#fffdf8;--line:#d6cfbf;--accent:#0b5d86;
+--c0:#f2e2c6;--c1:#cfdcf3;--c2:#d3ecca;--c3:#f7d4d0;--sea1:#e3f3fa;--sea2:#bfe1f0;--g0:#dcdcdc;--g1:#d0d0d0;--g2:#c4c4c4;--g3:#b8b8b8;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1a22;--ink:#e8f1f5;--sub:#9db4c1;--card:#162630;--line:#2c4655;--accent:#6cc3ec;--c0:#7d6a48;--c1:#4a5f80;--c2:#51714a;--c3:#85514a;--sea1:#1d4256;--sea2:#16303d;--g0:#565b60;--g1:#4d5257;--g2:#44494e;--g3:#3b4045;}}
+:root[data-theme="dark"]{--bg:#0d1a22;--ink:#e8f1f5;--sub:#9db4c1;--card:#162630;--line:#2c4655;--accent:#6cc3ec;--c0:#7d6a48;--c1:#4a5f80;--c2:#51714a;--c3:#85514a;--sea1:#1d4256;--sea2:#16303d;--g0:#565b60;--g1:#4d5257;--g2:#44494e;--g3:#3b4045;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.5}
+main{max-width:480px;margin:0 auto;padding:16px}
+h1{font-size:23px;margin:4px 0;letter-spacing:-.5px}
+.sub{color:var(--sub);font-size:14px;margin:0 0 12px}
+.stat{display:flex;gap:8px;font-size:13px;margin-bottom:10px;flex-wrap:wrap}
+.stat span{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+.sea{border-radius:20px;padding:10px;background:repeating-linear-gradient(8deg,rgba(255,255,255,.35) 0 2px,transparent 2px 14px),linear-gradient(180deg,var(--sea1),var(--sea2));box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
+.grid{display:grid;grid-template-columns:repeat(20,1fr);gap:1px}
+.cell{aspect-ratio:1;border:0;padding:0;background:transparent;font-size:clamp(9px,3.4vw,16px);line-height:1;display:flex;align-items:center;justify-content:center;border-radius:3px}
+.cell.land{cursor:pointer;box-shadow:inset 0 -2px 0 rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.6)}
+.cell.land:active{transform:scale(.88)}
+.cell:focus-visible{outline:2px solid #fff;z-index:2}
+.cell.done{box-shadow:inset 0 -2px 0 rgba(0,0,0,.1),0 0 0 1px rgba(255,255,255,.8)}
+.sq{border-radius:3px}.rd{border-radius:50%}.dm{border-radius:30%;transform:rotate(0)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;margin-top:10px;color:var(--sub)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.hint{font-size:13px;color:var(--sub);margin-top:10px}
+dialog{border:0;border-radius:18px;padding:18px;width:min(92vw,440px);background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+.tag{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px;margin-bottom:6px;color:#10303f}
+dialog h2{font-size:19px;margin:0 0 8px}
+dialog p{margin:0 0 10px;font-size:15px}
+.story{background:var(--bg);border-radius:12px;padding:12px;border-left:4px solid var(--accent)}
+.q{font-weight:700}
+.opt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit;cursor:pointer}
+.opt.ok{background:#bfe8c6;color:#0d3b18;border-color:#5fb36f}
+.opt.no{background:#f6c4c4;color:#4a1010;border-color:#d27070}
+.msg{font-size:14px;min-height:20px}
+.lab{font-size:13px;color:var(--sub);margin:10px 0 2px}
+.pal,.stk,.shp{display:flex;flex-wrap:wrap;gap:7px}
+.sw{width:32px;height:32px;border-radius:50%;border:2px solid transparent;cursor:pointer}
+.st{width:36px;height:36px;border-radius:10px;border:2px solid var(--line);background:var(--bg);font-size:19px;cursor:pointer}
+.sw.sel,.st.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--card) inset}
+input[type=text]{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.prev{width:44px;height:44px;border-radius:8px;margin:8px 0;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2)}
+.btn{width:100%;margin-top:10px;padding:12px;border:0;border-radius:12px;background:var(--accent);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.btn:disabled{opacity:.4}
+.btn.ghost{background:transparent;color:var(--sub);font-weight:400;margin-top:4px}
+.code{font-size:34px;font-weight:800;text-align:center;letter-spacing:2px;background:var(--bg);border-radius:12px;padding:12px;margin:6px 0}
+.agree{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--sub);margin-top:10px}
+.agree input{margin-top:3px}
+#note,#sid,#nm{margin-top:8px}
+.note{font-size:13px;color:var(--sub);margin-top:14px}
+</style>
+</head>
+<body>
+<main>
+<h1>Paint Dokdo</h1>
+<p class="sub">칸을 눌러 독도 이야기를 읽고, 퀴즈를 맞혀 내 칸을 꾸며요.</p>
+<div class="stat"><span id="s1"></span><span id="s2"></span><span id="s3">연결 중...</span></div>
+<div class="sea"><div class="grid" id="grid"></div></div>
+<p class="hint">회색 칸을 눌러 색칠해 주세요! 칸마다 다른 독도 퀴즈(역사·법·지리·현재)가 나와요. 왼쪽 큰 섬이 서도, 오른쪽이 동도예요.</p>
+<p class="note">모든 친구의 화면에 실시간으로 함께 칠해져요.</p>
+</main>
+<dialog id="dlg"><div id="body"></div></dialog>
+
+<script>
+const MAP=[
+"....X","...XXX","...XXXX.......X","..XXXXXX.....XXX","..XXXXXXX...XXXXX",
+".XXXXXXXX...XXXXXX",".XXXXXXXX...XXXXXX","..XXXXXXX...XXXXX","..XXXXXX.....XXXX",
+"...XXXXX.....XXX","....XXXX......X",".....XX","...X............X"
+].map(s=>s.padEnd(20,".").slice(0,20));
+const CATS=["역사","법·외교","지리·생태","현재"];
+const catOf=(r,c)=>c<10?(r<6?0:2):(r<6?1:3);
+const CARDS=[
+[{t:"이사부와 우산국",i:"삼국사기에는 신라 장군 이사부가 512년에 우산국을 복속시켰다는 기록이 있어요. 우산국은 울릉도와 독도를 중심으로 한 나라였어요.",q:"우산국을 신라에 복속시킨 장군은?",o:["이사부","김유신","을지문덕"],a:0},
+ {t:"안용복의 활약",i:"조선 숙종 때 어부 안용복은 일본에 건너가 울릉도와 독도가 조선 땅임을 알렸어요.",q:"안용복이 살았던 시대는?",o:["신라","고려","조선"],a:2},
+ {t:"세종실록지리지",i:"1454년에 만든 세종실록지리지에는 울진현 동쪽 바다에 우산(독도로 보는 섬)과 무릉(울릉도)이 있고, 맑은 날엔 서로 바라볼 수 있다고 적혀 있어요.",q:"세종실록지리지에서 두 섬은 언제 서로 보인다고 했을까?",o:["날씨가 맑을 때","한밤중에만","바다가 얼었을 때"],a:0},
+ {t:"수토 제도",i:"조선 정부는 울릉도와 주변 섬을 관리가 직접 가서 살펴보는 '수토 제도'를 운영했어요.",q:"조선이 울릉도에 관리를 보내 살피던 제도는?",o:["수토제","과거제","호패법"],a:0},
+ {t:"독도의용수비대",i:"6·25 전쟁 중이던 1953년, 울릉도 청년들이 모여 독도의용수비대를 만들고 독도를 지켰어요.",q:"1953년 울릉도 청년들이 독도를 지키려고 만든 단체는?",o:["독도의용수비대","의병대","광복군"],a:0},
+ {t:"팔도총도",i:"1531년에 만든 신증동국여지승람의 팔도총도에는 동해에 울릉도와 우산도, 두 섬이 그려져 있어요.",q:"팔도총도의 동해에는 섬이 몇 개 그려져 있을까?",o:["한 개","두 개","세 개"],a:1}],
+[{t:"1877년 태정관 지령",i:"1877년 일본의 최고 국가기관 태정관은 '울릉도와 그 외 한 섬(독도)은 일본과 관계없다'고 결정했어요.",q:"1877년 태정관은 독도를 일본 땅이라고 했다.",o:["O","X"],a:1},
+ {t:"대한제국 칙령 제41호",i:"1900년 대한제국은 칙령 제41호로 울도군이 다스릴 곳을 울릉도, 죽도, 석도로 정했어요. 우리 정부는 이 '석도'를 독도로 보고 있어요.",q:"칙령 제41호를 발표한 나라는?",o:["대한제국","고려","일본"],a:0},
+ {t:"평화선",i:"1952년 대한민국은 바다에 '평화선'을 선포했고, 독도도 이 선 안에 포함됐어요.",q:"1952년 대한민국이 선포한 바다의 선은?",o:["평화선","휴전선","북방한계선"],a:0},
+ {t:"연합군 최고사령부 지령",i:"1946년 연합군 최고사령부는 지령 제677호로 울릉도, 독도, 제주도를 일본의 통치·행정 범위에서 제외했어요. (최종 영토 결정은 아니었어요.)",q:"1946년 연합군 최고사령부는 독도를 일본의 행정 범위에서 제외했다.",o:["O","X"],a:0},
+ {t:"일본 문서 은주시청합기",i:"1667년 일본 문서 『은주시청합기』는 일본의 서북쪽 한계를 오키섬(은주)으로 적었어요. 울릉도와 독도는 그 밖으로 본 거예요.",q:"이 문서가 일본의 서북쪽 한계로 적은 곳은?",o:["오키섬(은주)","울릉도","독도"],a:0},
+ {t:"1696년 일본 막부의 결정",i:"1696년 일본 에도 막부는 일본인이 울릉도로 건너가는 것을 금지했어요.",q:"1696년 일본 막부는 울릉도로 건너가는 것을 허락했다.",o:["O","X"],a:1}],
+[{t:"동도와 서도",i:"독도는 두 개의 큰 섬인 동도와 서도, 그리고 많은 작은 바위섬으로 이루어져 있어요.",q:"독도의 두 큰 섬 이름은?",o:["동도와 서도","남도와 북도","상도와 하도"],a:0},
+ {t:"괭이갈매기의 섬",i:"독도는 천연기념물이고, 괭이갈매기가 많이 찾아와 번식해요.",q:"독도에서 많이 볼 수 있는 새는?",o:["펭귄","괭이갈매기","독수리"],a:1},
+ {t:"울릉도의 이웃",i:"독도는 울릉도에서 동남쪽으로 약 87km 떨어져 있어요. 맑은 날엔 울릉도에서 독도가 보이기도 해요.",q:"독도와 가장 가까운 큰 섬은?",o:["제주도","울릉도","거제도"],a:1},
+ {t:"독도의 주소",i:"독도의 주소는 경상북도 울릉군 울릉읍 독도리예요.",q:"독도는 경상북도 어느 군에 속할까?",o:["울릉군","울진군","영덕군"],a:0},
+ {t:"화산이 만든 섬",i:"독도는 수백만 년 전 바다 속 화산 활동으로 솟아오른 화산섬이에요.",q:"독도는 어떻게 만들어진 섬일까?",o:["화산 활동","산호가 쌓여서","빙하가 녹아서"],a:0},
+ {t:"서도의 대한봉",i:"서도에서 가장 높은 봉우리는 해발 약 168m의 대한봉이에요.",q:"서도에서 가장 높은 봉우리 이름은?",o:["대한봉","우산봉","천왕봉"],a:0},
+ {t:"좋은 어장",i:"독도 근처 바다는 따뜻한 난류와 차가운 한류가 만나서 물고기가 많은 좋은 어장이에요.",q:"독도 근처에서 난류와 만나는 바닷물은?",o:["한류","강물","빙산"],a:0},
+ {t:"독도의 식물",i:"독도에는 해국, 섬괴불나무, 땅채송화 같은 식물이 자라요.",q:"독도에서 자라는 식물은?",o:["해국","선인장","야자나무"],a:0}],
+[{t:"독도의 날",i:"10월 25일은 독도의 날이에요. 1900년 대한제국이 칙령 제41호를 반포한 날(10월 25일)을 기념해요.",q:"독도의 날은 언제일까요?",o:["3월 1일","10월 25일","8월 15일"],a:1},
+ {t:"독도경비대",i:"지금도 경찰인 독도경비대가 독도에 머물며 24시간 독도를 지키고 있어요.",q:"독도경비대는 어디 소속일까?",o:["경찰","소방","우체국"],a:0},
+ {t:"독도의 등대",i:"독도에는 바닷길을 밝혀 주는 등대가 있어서 배들이 안전하게 다닐 수 있어요.",q:"독도에서 바닷길을 밝혀 주는 시설은?",o:["등대","놀이공원","공항"],a:0},
+ {t:"독도 가는 길",i:"독도로 가는 관광선은 울릉도에서 출발해요. 파도가 높은 날에는 배가 뜨지 못하거나 섬에 내리지 못할 수도 있어요.",q:"독도로 가는 배는 주로 어디에서 출발할까?",o:["울릉도","제주도","인천"],a:0},
+ {t:"독도를 지키는 규칙",i:"독도는 천연기념물 제336호 '독도 천연보호구역'이에요. 허가 없이 식물이나 돌을 가져올 수 없어요.",q:"독도의 식물이나 돌을 마음대로 가져와도 된다.",o:["O","X"],a:1}]
+];
+const COLORS=["#ffb3ba","#ffd6a5","#fdf2a0","#c4f0b8","#a8ecd8","#9bdcf5","#a9c4ff","#c9b8ff","#ffc4ec","#f3d9c4","#ffffff","#d9e2ec"];
+const STK=["","🌊","🐦","🌺","⭐","🐟","🌿","❤️","🇰🇷","🌅","🦭"];
+const TINT=["var(--c0)","var(--c1)","var(--c2)","var(--c3)"];
+const GRAY=["var(--g0)","var(--g1)","var(--g2)","var(--g3)"];
+const state={};let total=0;const seen=new Set();
+function pickCard(){const all=[];CARDS.forEach((l,ci)=>l.forEach((_,i)=>all.push([ci,i])));
+ const cnt={};Object.values(state).forEach(v=>{const key=v.ci+"_"+v.idx;cnt[key]=(cnt[key]||0)+1;});
+ const sc=all.map(([ci,i])=>(cnt[ci+"_"+i]||0)+(seen.has(ci+"_"+i)?100:0)),m=Math.min(...sc);
+ const c=all.filter((_,j)=>sc[j]===m),p=c[Math.floor(Math.random()*c.length)];
+ seen.add(p[0]+"_"+p[1]);return {ci:p[0],idx:p[1]};}
+const grid=document.getElementById("grid"),dlg=document.getElementById("dlg"),body=document.getElementById("body");
+MAP.forEach((row,r)=>[...row].forEach((ch,c)=>{
+ const b=document.createElement("button");b.className="cell";
+ if(ch==="X"){total++;b.className+=" land";b.id="c"+r+"_"+c;b.style.background=GRAY[0];b.dataset.ci=0;
+  b.setAttribute("aria-label","독도 칸");b.onclick=()=>openCell(r,c);}
+ else{b.disabled=true;b.tabIndex=-1;}
+ grid.appendChild(b);}));
+const DB="https://dokdo-canvas-2026-default-rtdb.firebaseio.com";
+function status(t){s3.textContent=t;}
+function fail(e){
+ if(e&&(e.status===401||e.status===403))status("연결 안 됨: 규칙을 확인해 주세요");
+ else if(location.protocol!=="https:"&&location.protocol!=="http:")status("연결 안 됨: 사이트 주소로 열어 주세요");
+ else status("연결 안 됨: 인터넷을 확인해 주세요");}
+function stats(){const n=Object.keys(state).length;s1.textContent="칠한 칸 "+n+" / "+total;
+ const ok=Object.values(state).filter(v=>v.ok).length;s2.textContent="한 번에 맞힌 비율 "+(n?Math.round(ok/n*100)+"%":"-");}
+function paint(k){const el=document.getElementById("c"+k);if(!el)return;const s=state[k];
+ if(s){el.style.background=s.color;el.textContent=s.stk||"";el.classList.add("done");}
+ else{el.style.background=GRAY[el.dataset.ci];el.textContent="";el.classList.remove("done");}}
+function load(){
+ return fetch(DB+"/cells.json").then(r=>{if(!r.ok)throw {status:r.status};return r.json();}).then(v=>{
+  v=v||{};
+  Object.keys(state).forEach(k=>{if(!v[k]){delete state[k];paint(k);}});
+  Object.keys(v).forEach(k=>{state[k]=v[k];paint(k);});
+  stats();status("실시간 연결됨");}).catch(fail);}
+load();setInterval(load,3000);
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+const close=`<button class="btn ghost" onclick="dlg.close()">닫기</button>`;
+function openCell(r,c){
+ const k=r+"_"+c;
+ if(state[k]){const s=state[k],card=CARDS[s.ci][s.idx]||CARDS[s.ci][0];
+  body.innerHTML=`<span class="tag" style="background:${TINT[s.ci]}">${CATS[s.ci]}</span><h2>${card.t}</h2><p class="story">${card.i}</p>
+  <p>친구의 한 줄: "${esc(s.note||"(없음)")}"</p>${close}`;dlg.showModal();return;}
+ const pc=pickCard(),ci=pc.ci,idx=pc.idx,card=CARDS[ci][idx];
+ body.innerHTML=`<span class="tag" style="background:${TINT[ci]}">${CATS[ci]}</span><h2>${card.t}</h2><p class="story">${card.i}</p>
+ <button class="btn" id="go">퀴즈 풀고 칸 열기</button>${close}`;
+ go.onclick=()=>quiz(k,ci,idx,card);dlg.showModal();}
+function quiz(k,ci,idx,card){
+ const opts=card.o.map((t,i)=>({t,ok:i===card.a}));if(opts.length>2)opts.sort(()=>Math.random()-.5);
+ body.innerHTML=`<span class="tag" style="background:${TINT[ci]}">${CATS[ci]}</span><p class="story">${card.i}</p><p class="q">${card.q}</p>`+
+ opts.map(o=>`<button class="opt" data-ok="${o.ok?1:0}">${o.t}</button>`).join("")+`<div class="msg" id="msg"></div>${close}`;
+ let wrong=false;
+ body.querySelectorAll(".opt").forEach(btn=>btn.onclick=()=>{
+  if(btn.dataset.ok==="1"){btn.classList.add("ok");setTimeout(()=>decorate(k,ci,idx,!wrong),500);}
+  else{wrong=true;btn.classList.add("no");msg.textContent="다시 생각해 볼까요? 위 설명에 힌트가 있어요.";}});}
+function decorate(k,ci,idx,ok){
+ let col=COLORS[0],stk="🌊";
+ body.innerHTML=`<h2>정답! 내 칸을 꾸며요</h2>
+ <div class="lab">색</div><div class="pal">${COLORS.map((c,i)=>`<button class="sw ${i?"":"sel"}" style="background:${c}" data-c="${c}" aria-label="색 ${i+1}"></button>`).join("")}</div>
+ <div class="lab">스티커</div><div class="stk">${STK.map((s,i)=>`<button class="st ${i==1?"sel":""}" data-s="${s}">${s||"✕"}</button>`).join("")}</div>
+ <div class="lab">미리보기</div><div class="prev" id="pv"></div>
+ <input type="text" id="note" maxlength="40" placeholder="새로 알게 된 점 한 줄 (40자 이내)">
+ <div class="lab">참여 확인 (추첨용)</div>
+ <input type="text" id="sid" inputmode="numeric" maxlength="8" placeholder="학번 (숫자)">
+ <input type="text" id="nm" maxlength="10" placeholder="이름">
+ <label class="agree"><input type="checkbox" id="ag"><span>학번·이름은 추첨 확인용으로만 쓰고 행사 후 삭제한다는 것에 동의해요.</span></label>
+ <button class="btn" id="save">이 칸 칠하기</button>`;
+ const pv=document.getElementById("pv");
+ const draw=()=>{pv.style.background=col;pv.textContent=stk;};
+ const pick=(sel,attr,fn)=>body.querySelectorAll(sel).forEach(b=>b.onclick=()=>{body.querySelectorAll(sel).forEach(x=>x.classList.remove("sel"));b.classList.add("sel");fn(b.dataset[attr]);draw();});
+ pick(".sw","c",v=>col=v);pick(".stk .st","s",v=>stk=v);draw();
+ const showDone=(code,saved)=>{
+  body.innerHTML=`<h2>칠하기 완료! 🎉</h2><p>내 칸 번호</p><div class="code">${code}</div>`+
+   (saved?`<p class="note">참여가 기록됐어요. 이 화면을 캡처해 두세요.</p>`:`<p class="note" style="color:#c0392b">학번 저장이 안 됐어요. 선생님께 칸 번호 ${code}를 알려 주세요.</p>`)+close;};
+ save.onclick=()=>{
+  const sid=document.getElementById("sid").value.trim(),nm=document.getElementById("nm").value.trim();
+  if(!/^\d{3,8}$/.test(sid)){alert("학번은 숫자 3~8자리로 입력해 주세요.");return;}
+  if(!nm||nm.length>10){alert("이름을 입력해 주세요. (10자 이내)");return;}
+  if(!document.getElementById("ag").checked){alert("동의에 체크해 주세요.");return;}
+  save.disabled=true;
+  const rr=+k.split("_")[0],cc=+k.split("_")[1],code=String.fromCharCode(65+rr)+(cc+1);
+  const rec={code,color:col,stk,note:document.getElementById("note").value.trim().slice(0,40),ci,idx,ok,t:Date.now()};
+  const url=DB+"/cells/"+k+".json",eurl=DB+"/entries/"+k+".json";
+  fetch(url).then(r=>r.json()).then(cur=>{
+   if(cur){load();body.innerHTML=`<h2>앗, 방금 다른 친구가 이 칸을 칠했어요</h2><p>다른 칸을 골라 주세요.</p>${close}`;return;}
+   return fetch(url,{method:"PUT",body:JSON.stringify(rec)}).then(r=>{
+    if(!r.ok)throw {status:r.status};
+    state[k]=rec;paint(k);stats();
+    return fetch(eurl,{method:"PUT",body:JSON.stringify({sid,name:nm,code,t:rec.t})}).then(r2=>showDone(code,r2.ok)).catch(()=>showDone(code,false));
+   });
+  }).catch(e=>{fail(e);alert("저장하지 못했어요. 화면 위쪽 연결 상태를 확인해 주세요.");save.disabled=false;});};}
+stats();
+</script>
+</body>
+</html>
